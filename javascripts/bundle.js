@@ -49,6 +49,8 @@
 
 	'use strict';
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -59,49 +61,133 @@
 	
 	var React = __webpack_require__(/*! react */ 1);
 	var ReactDOM = __webpack_require__(/*! react-dom */ 40);
+	var globalConfig = __webpack_require__(/*! ../configs/config.js */ 187);
 	
 	var App = function (_React$Component) {
-		_inherits(App, _React$Component);
+	  _inherits(App, _React$Component);
 	
-		function App(props) {
-			_classCallCheck(this, App);
+	  function App(props) {
+	    _classCallCheck(this, App);
 	
-			var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
 	
-			_this.state = {
-				time: 0
-			};
-			return _this;
-		}
+	    _this.state = {
+	      playing: false,
+	      time: 0,
+	      liveCells: new Set()
+	    };
+	    setInterval(_this.updateGame.bind(_this), 500);
+	    return _this;
+	  }
 	
-		_createClass(App, [{
-			key: 'handlePlay',
-			value: function handlePlay() {
-				this.setState({
-					time: this.state.time + 1
-				});
-			}
-		}, {
-			key: 'render',
-			value: function render() {
-				return React.createElement(
-					'div',
-					null,
-					React.createElement(
-						'button',
-						{ type: 'button', onClick: this.handlePlay.bind(this) },
-						'Play'
-					),
-					React.createElement(
-						'div',
-						null,
-						this.state.time
-					)
-				);
-			}
-		}]);
+	  _createClass(App, [{
+	    key: 'handlePlay',
+	    value: function handlePlay() {
+	      this.setState({
+	        playing: true,
+	        time: 0
+	      });
+	    }
+	  }, {
+	    key: 'updateGame',
+	    value: function updateGame() {
+	      if (this.state.playing === false) {
+	        return;
+	      }
+	      this.setState({
+	        time: this.state.time + 1
+	      });
+	    }
 	
-		return App;
+	    // TODO: Fix scrolling issue.
+	
+	  }, {
+	    key: 'processClick',
+	    value: function processClick(e) {
+	      var x = parseInt(globalConfig.squareSize * Math.floor(e.clientX / globalConfig.squareSize), 10);
+	      var y = parseInt(globalConfig.squareSize * Math.floor(e.clientY / globalConfig.squareSize), 10);
+	
+	      if (x < globalConfig.playWindow && y < globalConfig.playWindow) {
+	        return;
+	      }
+	
+	      this.toggleCell(x, y);
+	    }
+	  }, {
+	    key: 'tupleToInt',
+	    value: function tupleToInt(x, y) {
+	      // console.log(x, y, x * globalConfig.fuckjs + y)
+	      return x * globalConfig.fuckjs + y;
+	    }
+	  }, {
+	    key: 'intToTuple',
+	    value: function intToTuple(v) {
+	      var y = v % globalConfig.fuckjs;
+	      var x = (v - y) / globalConfig.fuckjs;
+	      // console.log(v, x, y)
+	      return [x, y];
+	    }
+	  }, {
+	    key: 'toggleCell',
+	    value: function toggleCell(x, y) {
+	      var curCell = this.tupleToInt(x, y);
+	      if (this.state.liveCells.has(curCell)) {
+	        this.state.liveCells.delete(curCell);
+	        console.log("Removing");
+	      } else {
+	        this.state.liveCells.add(curCell);
+	        console.log("Adding");
+	      }
+	      console.log(x, y);
+	
+	      this.setState({
+	        liveCells: this.state.liveCells
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
+	
+	      return React.createElement(
+	        'div',
+	        { id: 'world', onClick: this.processClick.bind(this) },
+	        React.createElement(
+	          'button',
+	          { type: 'button', onClick: this.handlePlay.bind(this) },
+	          'Play'
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          this.state.time
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          this.state.playing
+	        ),
+	        Array.from(this.state.liveCells.values()).map(function (v) {
+	          var _intToTuple = _this2.intToTuple(v),
+	              _intToTuple2 = _slicedToArray(_intToTuple, 2),
+	              x = _intToTuple2[0],
+	              y = _intToTuple2[1];
+	
+	          var divStyle = {
+	            position: 'absolute',
+	            left: x,
+	            top: y,
+	            height: globalConfig.squareSize,
+	            width: globalConfig.squareSize,
+	            backgroundColor: 'black'
+	          };
+	          return React.createElement('div', { key: v, style: divStyle });
+	        })
+	      );
+	    }
+	  }]);
+	
+	  return App;
 	}(React.Component);
 	
 	ReactDOM.render(React.createElement(App, null), document.getElementById('app'));
@@ -22896,6 +22982,22 @@
 	
 	module.exports = ReactDOMInvalidARIAHook;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../../process/browser.js */ 3)))
+
+/***/ }),
+/* 187 */
+/*!***************************!*\
+  !*** ./configs/config.js ***!
+  \***************************/
+/***/ (function(module, exports) {
+
+	const globalConfig = {
+	  squareSize: 20,  // pixels
+	  fuckjs: 1000000,  // because we don't have tuples
+	  playWindow: 50
+	}
+	
+	module.exports = globalConfig
+
 
 /***/ })
 /******/ ]);
