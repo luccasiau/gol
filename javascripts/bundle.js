@@ -178,7 +178,6 @@
 	        }
 	      });
 	
-	      // TODO: Add dead cells
 	      this.state.liveCells.forEach(function (cell) {
 	        var _intToTuple5 = _this4.intToTuple(cell),
 	            _intToTuple6 = _slicedToArray(_intToTuple5, 2),
@@ -231,7 +230,6 @@
 	  }, {
 	    key: 'tupleToInt',
 	    value: function tupleToInt(x, y) {
-	      // console.log(x, y, x * globalConfig.fuckjs + y)
 	      return x * globalConfig.fuckjs + y;
 	    }
 	  }, {
@@ -239,7 +237,6 @@
 	    value: function intToTuple(v) {
 	      var y = v % globalConfig.fuckjs;
 	      var x = (v - y) / globalConfig.fuckjs;
-	      // console.log(v, x, y)
 	      return [x, y];
 	    }
 	  }, {
@@ -248,12 +245,9 @@
 	      var curCell = this.tupleToInt(x, y);
 	      if (this.state.liveCells.has(curCell)) {
 	        this.state.liveCells.delete(curCell);
-	        console.log("Removing");
 	      } else {
 	        this.state.liveCells.add(curCell);
-	        console.log("Adding");
 	      }
-	      console.log(x, y);
 	
 	      this.setState({
 	        liveCells: this.state.liveCells

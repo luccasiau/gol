@@ -88,7 +88,6 @@ class App extends React.Component {
       }
     })
 
-    // TODO: Add dead cells
     this.state.liveCells.forEach( cell => {
       let [cx, cy] = this.intToTuple(cell)
       let cellNeighbours = this.getNeighbours(cx, cy)
@@ -129,14 +128,12 @@ class App extends React.Component {
   }
 
   tupleToInt(x, y) {
-    // console.log(x, y, x * globalConfig.fuckjs + y)
     return x * globalConfig.fuckjs + y
   }
 
   intToTuple(v) {
     let y = v % globalConfig.fuckjs
     let x = (v - y) / globalConfig.fuckjs
-    // console.log(v, x, y)
     return [x, y]
   }
 
@@ -144,12 +141,9 @@ class App extends React.Component {
     let curCell = this.tupleToInt(x, y)
     if (this.state.liveCells.has(curCell)) {
       this.state.liveCells.delete(curCell)
-      console.log("Removing")
     } else {
       this.state.liveCells.add(curCell)
-      console.log("Adding")
     }
-    console.log(x, y)
 
     this.setState({
       liveCells: this.state.liveCells
