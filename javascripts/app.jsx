@@ -112,15 +112,17 @@ class App extends React.Component {
     });
   }
 
-  // TODO: Fix scrolling issue.
   processClick(e) {
     if (this.state.playing === true || this.state.paused === true) {
       return;
     }
-    let x = parseInt(globalConfig.squareSize * Math.floor(e.clientX/globalConfig.squareSize), 10)
-    let y = parseInt(globalConfig.squareSize * Math.floor(e.clientY/globalConfig.squareSize), 10)
+    let xClicked = e.clientX + window.pageXOffset
+    let yClicked = e.clientY + window.pageYOffset
+    let x = parseInt(globalConfig.squareSize * Math.floor(xClicked/globalConfig.squareSize), 10)
+    let y = parseInt(globalConfig.squareSize * Math.floor(yClicked/globalConfig.squareSize), 10)
 
-    if (x < globalConfig.playWindow && y < globalConfig.playWindow) {
+    console.log(xClicked, window.pageXOffset)
+    if (x < globalConfig.playWindowX && y < globalConfig.playWindowY) {
       return
     }
 

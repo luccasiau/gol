@@ -209,19 +209,19 @@
 	        liveCells: newCells
 	      });
 	    }
-	
-	    // TODO: Fix scrolling issue.
-	
 	  }, {
 	    key: 'processClick',
 	    value: function processClick(e) {
 	      if (this.state.playing === true || this.state.paused === true) {
 	        return;
 	      }
-	      var x = parseInt(globalConfig.squareSize * Math.floor(e.clientX / globalConfig.squareSize), 10);
-	      var y = parseInt(globalConfig.squareSize * Math.floor(e.clientY / globalConfig.squareSize), 10);
+	      var xClicked = e.clientX + window.pageXOffset;
+	      var yClicked = e.clientY + window.pageYOffset;
+	      var x = parseInt(globalConfig.squareSize * Math.floor(xClicked / globalConfig.squareSize), 10);
+	      var y = parseInt(globalConfig.squareSize * Math.floor(yClicked / globalConfig.squareSize), 10);
 	
-	      if (x < globalConfig.playWindow && y < globalConfig.playWindow) {
+	      console.log(xClicked, window.pageXOffset);
+	      if (x < globalConfig.playWindowX && y < globalConfig.playWindowY) {
 	        return;
 	      }
 	
@@ -23112,7 +23112,8 @@
 	const globalConfig = {
 	  squareSize: 20,  // pixels
 	  fuckjs: 1000000,  // because we don't have tuples
-	  playWindow: 50
+	  playWindowX: 150,
+	  playWindowY: 50
 	}
 	
 	module.exports = globalConfig
