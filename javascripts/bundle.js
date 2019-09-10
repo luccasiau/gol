@@ -73,29 +73,141 @@
 	
 	    _this.state = {
 	      playing: false,
+	      paused: false,
 	      time: 0,
 	      liveCells: new Set()
 	    };
-	    setInterval(_this.updateGame.bind(_this), 500);
+	    setInterval(_this.updateGame.bind(_this), 250);
 	    return _this;
 	  }
 	
 	  _createClass(App, [{
-	    key: 'handlePlay',
-	    value: function handlePlay() {
+	    key: 'resetGame',
+	    value: function resetGame() {
 	      this.setState({
-	        playing: true,
-	        time: 0
+	        playing: false,
+	        paused: false,
+	        time: 0,
+	        liveCells: new Set()
 	      });
 	    }
 	  }, {
+	    key: 'pauseGame',
+	    value: function pauseGame() {
+	      this.setState({
+	        paused: true
+	      });
+	    }
+	  }, {
+	    key: 'playGame',
+	    value: function playGame() {
+	      if (this.state.playing === false) {
+	        this.setState({
+	          playing: true,
+	          time: 0
+	        });
+	      }
+	    }
+	  }, {
+	    key: 'countLiveNeighbours',
+	    value: function countLiveNeighbours(x, y) {
+	      var _this2 = this;
+	
+	      var V = [-1, 0, 1];
+	      var neighbours = this.getNeighbours(x, y);
+	
+	      var cnt = 0;
+	      neighbours.forEach(function (cell) {
+	        var _intToTuple = _this2.intToTuple(cell),
+	            _intToTuple2 = _slicedToArray(_intToTuple, 2),
+	            nx = _intToTuple2[0],
+	            ny = _intToTuple2[1];
+	
+	        if (_this2.state.liveCells.has(_this2.tupleToInt(nx, ny))) {
+	          cnt = cnt + 1;
+	        }
+	      });
+	
+	      return cnt;
+	    }
+	  }, {
+	    key: 'getNeighbours',
+	    value: function getNeighbours(x, y) {
+	      var _this3 = this;
+	
+	      var V = [-1, 0, 1];
+	      var neighbours = new Set();
+	      V.forEach(function (vx) {
+	        V.forEach(function (vy) {
+	          if (vx === 0 && vy === 0) {
+	            return;
+	          }
+	
+	          var nx = vx * globalConfig.squareSize + x;
+	          var ny = vy * globalConfig.squareSize + y;
+	          neighbours.add(_this3.tupleToInt(nx, ny));
+	        });
+	      });
+	
+	      return neighbours;
+	    }
+	
+	    // TODO: Code whole thing, basically
+	
+	  }, {
 	    key: 'updateGame',
 	    value: function updateGame() {
-	      if (this.state.playing === false) {
+	      var _this4 = this;
+	
+	      if (this.state.playing === false || this.state.paused === true) {
 	        return;
 	      }
+	
+	      var newCells = new Set();
+	
+	      // preserving correct live cells
+	      this.state.liveCells.forEach(function (cell) {
+	        var _intToTuple3 = _this4.intToTuple(cell),
+	            _intToTuple4 = _slicedToArray(_intToTuple3, 2),
+	            x = _intToTuple4[0],
+	            y = _intToTuple4[1];
+	
+	        var nei = _this4.countLiveNeighbours(x, y);
+	        if (nei === 2 || nei === 3) {
+	          newCells.add(cell);
+	        }
+	      });
+	
+	      // TODO: Add dead cells
+	      this.state.liveCells.forEach(function (cell) {
+	        var _intToTuple5 = _this4.intToTuple(cell),
+	            _intToTuple6 = _slicedToArray(_intToTuple5, 2),
+	            cx = _intToTuple6[0],
+	            cy = _intToTuple6[1];
+	
+	        var cellNeighbours = _this4.getNeighbours(cx, cy);
+	        cellNeighbours.forEach(function (c) {
+	          if (_this4.state.liveCells.has(c) === false) {
+	            // already processed it
+	            if (newCells.has(c) === true) {
+	              return;
+	            }
+	
+	            var _intToTuple7 = _this4.intToTuple(c),
+	                _intToTuple8 = _slicedToArray(_intToTuple7, 2),
+	                dx = _intToTuple8[0],
+	                dy = _intToTuple8[1];
+	
+	            if (_this4.countLiveNeighbours(dx, dy) === 3) {
+	              newCells.add(c);
+	            }
+	          }
+	        });
+	      });
+	
 	      this.setState({
-	        time: this.state.time + 1
+	        time: this.state.time + 1,
+	        liveCells: newCells
 	      });
 	    }
 	
@@ -104,6 +216,9 @@
 	  }, {
 	    key: 'processClick',
 	    value: function processClick(e) {
+	      if (this.state.playing === true || this.state.paused === true) {
+	        return;
+	      }
 	      var x = parseInt(globalConfig.squareSize * Math.floor(e.clientX / globalConfig.squareSize), 10);
 	      var y = parseInt(globalConfig.squareSize * Math.floor(e.clientY / globalConfig.squareSize), 10);
 	
@@ -147,15 +262,25 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _this2 = this;
+	      var _this5 = this;
 	
 	      return React.createElement(
 	        'div',
 	        { id: 'world', onClick: this.processClick.bind(this) },
 	        React.createElement(
 	          'button',
-	          { type: 'button', onClick: this.handlePlay.bind(this) },
+	          { type: 'button', onClick: this.playGame.bind(this) },
 	          'Play'
+	        ),
+	        React.createElement(
+	          'button',
+	          { type: 'button', onClick: this.pauseGame.bind(this) },
+	          'Pause'
+	        ),
+	        React.createElement(
+	          'button',
+	          { type: 'button', onClick: this.resetGame.bind(this) },
+	          'Reset'
 	        ),
 	        React.createElement(
 	          'div',
@@ -168,10 +293,10 @@
 	          this.state.playing
 	        ),
 	        Array.from(this.state.liveCells.values()).map(function (v) {
-	          var _intToTuple = _this2.intToTuple(v),
-	              _intToTuple2 = _slicedToArray(_intToTuple, 2),
-	              x = _intToTuple2[0],
-	              y = _intToTuple2[1];
+	          var _intToTuple9 = _this5.intToTuple(v),
+	              _intToTuple10 = _slicedToArray(_intToTuple9, 2),
+	              x = _intToTuple10[0],
+	              y = _intToTuple10[1];
 	
 	          var divStyle = {
 	            position: 'absolute',
