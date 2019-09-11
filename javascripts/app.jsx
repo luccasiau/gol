@@ -11,7 +11,9 @@ class App extends React.Component {
       time: 0,
       liveCells: new Set()
 		}
-    setInterval(this.updateGame.bind(this), 250);
+
+    this.updateTime = 500
+    this.updateTimer = setInterval(this.updateGame.bind(this), this.updateTime);
 	};
 
   resetGame() {
@@ -25,6 +27,7 @@ class App extends React.Component {
 
   pauseGame() {
     this.setState({
+      playing: false,
       paused: true
     })
   }
@@ -33,7 +36,7 @@ class App extends React.Component {
     if (this.state.playing === false) {
       this.setState({
         playing: true,
-        time: 0
+        paused: false
       });
     }
   };
@@ -71,7 +74,6 @@ class App extends React.Component {
     return neighbours;
   }
 
-  // TODO: Code whole thing, basically
   updateGame() {
     if (this.state.playing === false || this.state.paused === true) {
       return;
@@ -121,7 +123,6 @@ class App extends React.Component {
     let x = parseInt(globalConfig.squareSize * Math.floor(xClicked/globalConfig.squareSize), 10)
     let y = parseInt(globalConfig.squareSize * Math.floor(yClicked/globalConfig.squareSize), 10)
 
-    console.log(xClicked, window.pageXOffset)
     if (x < globalConfig.playWindowX && y < globalConfig.playWindowY) {
       return
     }
@@ -152,14 +153,53 @@ class App extends React.Component {
     })
   }
 
+  updateSpeed() {
+    console.log("Changing speed to", this.updateTime)
+    clearInterval(this.updateTimer)
+    this.updateTimer = setInterval(this.updateGame.bind(this), this.updateTime)
+  }
+
+  increaseSpeed() {
+    if (this.updateTime === 25) {
+      alert("Already at maximum speed.")
+      return;
+    }
+    if (this.updateTime === 50) {
+      this.updateTime -= 25
+    } else {
+      this.updateTime -= 50
+    } 
+   
+    this.updateSpeed()
+  }
+
+  reduceSpeed() {
+    if (this.updateTime === 2000) {
+      alert("Already at minimum speed.")
+      return;
+
+    }
+    if (this.updateTime === 25) {
+      this.updateTime += 25
+    } else {
+      this.updateTime += 50
+    }
+
+    this.updateSpeed()
+  }
+
   render() {
     return (
       <div id="world" onClick={this.processClick.bind(this)}>
       <button type="button" onClick={this.playGame.bind(this)}>Play</button>
       <button type="button" onClick={this.pauseGame.bind(this)}>Pause</button>
       <button type="button" onClick={this.resetGame.bind(this)}>Reset</button>
-      <div>{this.state.time}</div>
-      <div>{this.state.playing}</div>
+      <div>
+        <button type="button" onClick={this.increaseSpeed.bind(this)}>Faster</button>
+        <button type="button" onClick={this.reduceSpeed.bind(this)}>Slower</button>
+      </div>
+      <div>Iteration: {this.state.time}</div>
+      <div>Live cells: {this.state.liveCells.size}</div>
       {
         Array.from(this.state.liveCells.values()).map(v => {
           let [x, y] = this.intToTuple(v)

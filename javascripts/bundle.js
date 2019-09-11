@@ -77,7 +77,9 @@
 	      time: 0,
 	      liveCells: new Set()
 	    };
-	    setInterval(_this.updateGame.bind(_this), 250);
+	
+	    _this.updateTime = 500;
+	    _this.updateTimer = setInterval(_this.updateGame.bind(_this), _this.updateTime);
 	    return _this;
 	  }
 	
@@ -95,6 +97,7 @@
 	    key: 'pauseGame',
 	    value: function pauseGame() {
 	      this.setState({
+	        playing: false,
 	        paused: true
 	      });
 	    }
@@ -104,7 +107,7 @@
 	      if (this.state.playing === false) {
 	        this.setState({
 	          playing: true,
-	          time: 0
+	          paused: false
 	        });
 	      }
 	    }
@@ -151,9 +154,6 @@
 	
 	      return neighbours;
 	    }
-	
-	    // TODO: Code whole thing, basically
-	
 	  }, {
 	    key: 'updateGame',
 	    value: function updateGame() {
@@ -220,7 +220,6 @@
 	      var x = parseInt(globalConfig.squareSize * Math.floor(xClicked / globalConfig.squareSize), 10);
 	      var y = parseInt(globalConfig.squareSize * Math.floor(yClicked / globalConfig.squareSize), 10);
 	
-	      console.log(xClicked, window.pageXOffset);
 	      if (x < globalConfig.playWindowX && y < globalConfig.playWindowY) {
 	        return;
 	      }
@@ -254,6 +253,43 @@
 	      });
 	    }
 	  }, {
+	    key: 'updateSpeed',
+	    value: function updateSpeed() {
+	      console.log("Changing speed to", this.updateTime);
+	      clearInterval(this.updateTimer);
+	      this.updateTimer = setInterval(this.updateGame.bind(this), this.updateTime);
+	    }
+	  }, {
+	    key: 'increaseSpeed',
+	    value: function increaseSpeed() {
+	      if (this.updateTime === 25) {
+	        alert("Already at maximum speed.");
+	        return;
+	      }
+	      if (this.updateTime === 50) {
+	        this.updateTime -= 25;
+	      } else {
+	        this.updateTime -= 50;
+	      }
+	
+	      this.updateSpeed();
+	    }
+	  }, {
+	    key: 'reduceSpeed',
+	    value: function reduceSpeed() {
+	      if (this.updateTime === 2000) {
+	        alert("Already at minimum speed.");
+	        return;
+	      }
+	      if (this.updateTime === 25) {
+	        this.updateTime += 25;
+	      } else {
+	        this.updateTime += 50;
+	      }
+	
+	      this.updateSpeed();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _this5 = this;
@@ -279,12 +315,28 @@
 	        React.createElement(
 	          'div',
 	          null,
+	          React.createElement(
+	            'button',
+	            { type: 'button', onClick: this.increaseSpeed.bind(this) },
+	            'Faster'
+	          ),
+	          React.createElement(
+	            'button',
+	            { type: 'button', onClick: this.reduceSpeed.bind(this) },
+	            'Slower'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          null,
+	          'Iteration: ',
 	          this.state.time
 	        ),
 	        React.createElement(
 	          'div',
 	          null,
-	          this.state.playing
+	          'Live cells: ',
+	          this.state.liveCells.size
 	        ),
 	        Array.from(this.state.liveCells.values()).map(function (v) {
 	          var _intToTuple9 = _this5.intToTuple(v),
